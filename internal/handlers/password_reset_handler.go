@@ -38,9 +38,14 @@ func (h *PasswordResetHandler) RequestReset(c *fiber.Ctx) error {
 
 	// Call service to handle reset request
 
-	link, err := h.passwordResetService.RequestReset(c.Context(), req.Email)
+	link, err := h.passwordResetService.RequestReset(c.Context(), req.Email, c)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to process password reset request")
+		if err.Error() == "user not found" {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+				"error": err.Error(),
+			})
+		}
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to process password reset request",
 		})
@@ -53,7 +58,16 @@ func (h *PasswordResetHandler) RequestReset(c *fiber.Ctx) error {
 }
 
 func (h *PasswordResetHandler) ResetPassword(c *fiber.Ctx) error {
+
 	var req models.ResetPasswordConfirmRequest
+	err := c.QueryParser(&req)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	log.Info().Msgf("Reset password request: %v", req)
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Invalid request body",

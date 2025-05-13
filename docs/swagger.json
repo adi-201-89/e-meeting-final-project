@@ -5,9 +5,8 @@
     "description": "API untuk aplikasi E-Meeting",
     "version": "1.0.0"
   },
-  "host": "localhost:8080",
   "basePath": "/api/v1",
-  "schemes": ["http"],
+  "schemes": ["http", "https"],
   "securityDefinitions": {
     "Bearer": {
       "type": "apiKey",
@@ -17,7 +16,10 @@
   },
   "security": [
     {
-      "Bearer": []
+      "Bearer": [
+        "admin",
+        "user"
+      ]
     }
   ],
   "paths": {
@@ -877,6 +879,10 @@
     "LoginResponse": {
       "type": "object",
       "properties": {
+        "user_id": {
+          "type": "string",
+          "format": "uuid"
+        },
         "token": {
           "type": "string"
         }
